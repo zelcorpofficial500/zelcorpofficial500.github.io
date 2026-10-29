@@ -62,6 +62,16 @@
       frame.src = APP + (q ? '?' + q : '');
     }
     load();
+    // Installed app: the booking page asks for full screen when it's clicked (it's frames deep inside Google's wrapper, so
+    // this page does it). Only messages from Google's app frames count, and only in the installed app.
+    window.addEventListener('message', function (e) {
+      var host = ''; try { host = new URL(e.origin).hostname; } catch (err) { return; }
+      if (!installed || !/\.googleusercontent\.com$/.test(host)) return;
+      if (e.data && e.data.zelApp === 'fullscreen' && document.fullscreenEnabled && !document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(function () { /* refused: stay windowed */ });
+      }
+    });
+
     // settle first: leaving full screen can briefly report the bar as hidden, which must not reload the app
     var settle = null;
     if (overlay) overlay.addEventListener('geometrychange', function () { clearTimeout(settle); settle = setTimeout(load, 600); });

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Zel Salon</title>
+  <meta name="description" content="Book your appointment at Zel Salon. No account needed.">
+  <meta name="theme-color" content="#1f2328">
+  <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta property="og:title" content="Zel Salon">
+  <meta property="og:description" content="Book your appointment at Zel Salon. No account needed.">
+  <meta property="og:image" content="https://zelcorpofficial500.github.io/icon-512.png">
+  <style>
+    html, body { margin: 0; height: 100%; background: #1f2328; overflow: hidden; }
+    iframe { border: 0; width: 100%; height: 100%; display: block; }
+    noscript a { color: #fff; font: 16px Arial, sans-serif; display: block; padding: 24px; }
+  </style>
+</head>
+<body>
+  <!--
+    The Zel Salon booking system runs as a Google Apps Script web app. Shown directly, Google adds a
+    "This application was created by a Google Apps Script user" bar on top; shown inside this frame, it doesn't.
+    Everything after the "?" (e.g. ?page=staff for the staff sign-in, ?ref=ZL-XXXXX from a booking email) is passed
+    straight through to the app.
+  -->
+  <iframe id="app" title="Zel Salon" allow="clipboard-write; geolocation"></iframe>
+  <noscript><a href="https://script.google.com/macros/s/AKfycbwweOuwLx1kf_GAjA0PmO52HwEMm1o3YnHBcGM-L2FwKyNyP3Etpp9FNa5Z_3oDuniOJQ/exec">Open the Zel Salon booking page</a></noscript>
+  <script>
+    var APP = 'https://script.google.com/macros/s/AKfycbwweOuwLx1kf_GAjA0PmO52HwEMm1o3YnHBcGM-L2FwKyNyP3Etpp9FNa5Z_3oDuniOJQ/exec';
+    var params = new URLSearchParams(location.search);
+    if (params.get('page') === 'staff') document.title = 'Zel Salon Staff';
+    document.getElementById('app').src = APP + location.search;
+  </script>
+</body>
+</html>

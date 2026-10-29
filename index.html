@@ -17,6 +17,11 @@
     html, body { margin: 0; height: 100%; background: #1f2328; overflow: hidden; }
     iframe { border: 0; width: 100%; height: 100%; display: block; }
     noscript a { color: #fff; font: 16px Arial, sans-serif; display: block; padding: 24px; }
+    /* Installed desktop app with the title bar hidden (Window Controls Overlay): an invisible strip where the title bar
+       was, so the window can still be dragged. The app below leaves this strip empty (see ?wco= in the script). */
+    #drag { display: none; position: fixed; z-index: 2; top: env(titlebar-area-y, 0); left: env(titlebar-area-x, 0);
+      width: env(titlebar-area-width, 100%); height: env(titlebar-area-height, 0); -webkit-app-region: drag; app-region: drag; }
+    body.wco #drag { display: block; }
   </style>
 </head>
 <body>
@@ -26,13 +31,29 @@
     Everything after the "?" (e.g. ?page=staff for the staff sign-in, ?ref=ZL-XXXXX from a booking email) is passed
     straight through to the app.
   -->
+  <div id="drag"></div>
   <iframe id="app" title="Zel Salon" allow="clipboard-write; geolocation"></iframe>
   <noscript><a href="https://script.google.com/macros/s/AKfycbwweOuwLx1kf_GAjA0PmO52HwEMm1o3YnHBcGM-L2FwKyNyP3Etpp9FNa5Z_3oDuniOJQ/exec">Open the Zel Salon booking page</a></noscript>
   <script>
     var APP = 'https://script.google.com/macros/s/AKfycbwweOuwLx1kf_GAjA0PmO52HwEMm1o3YnHBcGM-L2FwKyNyP3Etpp9FNa5Z_3oDuniOJQ/exec';
     var params = new URLSearchParams(location.search);
     if (params.get('page') === 'staff') document.title = 'Zel Salon Staff';
-    document.getElementById('app').src = APP + location.search;
+
+    // When the installed app's title bar is hidden, tell the app how tall the window-button strip is (?wco=<px>) so it
+    // moves its content below it. Reloads only when the bar is shown/hidden, not on every window resize.
+    var overlay = navigator.windowControlsOverlay, frame = document.getElementById('app'), shownHeight = -1;
+    function barHeight() { return overlay && overlay.visible ? Math.ceil(overlay.getTitlebarAreaRect().height) : 0; }
+    function load() {
+      var h = barHeight(), p = new URLSearchParams(location.search);
+      if (h === shownHeight) return;
+      shownHeight = h;
+      p.delete('wco'); if (h) p.set('wco', h);
+      var q = p.toString();
+      document.body.classList.toggle('wco', h > 0);
+      frame.src = APP + (q ? '?' + q : '');
+    }
+    load();
+    if (overlay) overlay.addEventListener('geometrychange', load);
   </script>
 </body>
 </html>

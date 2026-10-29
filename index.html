@@ -32,28 +32,39 @@
     straight through to the app.
   -->
   <div id="drag"></div>
-  <iframe id="app" title="Zel Salon" allow="clipboard-write; geolocation"></iframe>
+  <iframe id="app" title="Zel Salon" allow="clipboard-write; geolocation; fullscreen" allowfullscreen></iframe>
   <noscript><a href="https://script.google.com/macros/s/AKfycbwweOuwLx1kf_GAjA0PmO52HwEMm1o3YnHBcGM-L2FwKyNyP3Etpp9FNa5Z_3oDuniOJQ/exec">Open the Zel Salon booking page</a></noscript>
   <script>
     var APP = 'https://script.google.com/macros/s/AKfycbwweOuwLx1kf_GAjA0PmO52HwEMm1o3YnHBcGM-L2FwKyNyP3Etpp9FNa5Z_3oDuniOJQ/exec';
     var params = new URLSearchParams(location.search);
     if (params.get('page') === 'staff') document.title = 'Zel Salon Staff';
 
+    // Opened as the installed app (not a normal browser tab): ?app=1 tells the app to go full screen on the first click.
+    var installed = ['standalone', 'window-controls-overlay', 'fullscreen', 'minimal-ui'].some(function (m) {
+      return matchMedia('(display-mode: ' + m + ')').matches;
+    });
+
     // When the installed app's title bar is hidden, tell the app how tall the window-button strip is (?wco=<px>) so it
-    // moves its content below it. Reloads only when the bar is shown/hidden, not on every window resize.
+    // moves its content below it. Reloads only when the bar is shown/hidden, not on every window resize, and never while
+    // the app is full screen (reloading would throw it out of full screen).
     var overlay = navigator.windowControlsOverlay, frame = document.getElementById('app'), shownHeight = -1;
     function barHeight() { return overlay && overlay.visible ? Math.ceil(overlay.getTitlebarAreaRect().height) : 0; }
     function load() {
+      if (document.fullscreenElement) return;
       var h = barHeight(), p = new URLSearchParams(location.search);
       if (h === shownHeight) return;
       shownHeight = h;
-      p.delete('wco'); if (h) p.set('wco', h);
+      p.delete('wco'); p.delete('app');
+      if (h) p.set('wco', h);
+      if (installed) p.set('app', '1');
       var q = p.toString();
       document.body.classList.toggle('wco', h > 0);
       frame.src = APP + (q ? '?' + q : '');
     }
     load();
-    if (overlay) overlay.addEventListener('geometrychange', load);
+    // settle first: leaving full screen can briefly report the bar as hidden, which must not reload the app
+    var settle = null;
+    if (overlay) overlay.addEventListener('geometrychange', function () { clearTimeout(settle); settle = setTimeout(load, 600); });
   </script>
 </body>
 </html>

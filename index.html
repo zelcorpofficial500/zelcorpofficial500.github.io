@@ -39,6 +39,10 @@
     var params = new URLSearchParams(location.search);
     if (params.get('page') === 'staff') document.title = 'Zel Salon Staff';
 
+    // No "Install app" / "Add to Home screen" pop-up for clients (Chrome on Android shows one because this site is
+    // installable). Installing still works from the browser menu, and the installed desktop app is unaffected.
+    window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); });
+
     // Opened as the installed app (not a normal browser tab): ?app=1 tells the app to go full screen on the first click.
     var installed = ['standalone', 'window-controls-overlay', 'fullscreen', 'minimal-ui'].some(function (m) {
       return matchMedia('(display-mode: ' + m + ')').matches;

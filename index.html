@@ -68,10 +68,18 @@
     load();
     // Installed app: the booking page asks for full screen when it's clicked (it's frames deep inside Google's wrapper, so
     // this page does it). Only messages from Google's app frames count, and only in the installed app.
+    // The staff dashboard also sends its unseen notification count, shown as "(2) " in front of this tab's title.
+    var baseTitle = document.title;
     window.addEventListener('message', function (e) {
       var host = ''; try { host = new URL(e.origin).hostname; } catch (err) { return; }
-      if (!installed || !/\.googleusercontent\.com$/.test(host)) return;
-      if (e.data && e.data.zelApp === 'fullscreen' && document.fullscreenEnabled && !document.fullscreenElement) {
+      if (!/\.googleusercontent\.com$/.test(host) || !e.data) return;
+      if (e.data.zelApp === 'badge') {
+        var n = parseInt(e.data.count, 10) || 0;
+        document.title = (n > 0 ? '(' + (n > 99 ? '99+' : n) + ') ' : '') + (e.data.title ? String(e.data.title).slice(0, 60) : baseTitle);
+        return;
+      }
+      if (!installed) return;
+      if (e.data.zelApp === 'fullscreen' && document.fullscreenEnabled && !document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(function () { /* refused: stay windowed */ });
       }
     });

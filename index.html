@@ -37,9 +37,9 @@
   <script>
     var APP = 'https://script.google.com/macros/s/AKfycbwweOuwLx1kf_GAjA0PmO52HwEMm1o3YnHBcGM-L2FwKyNyP3Etpp9FNa5Z_3oDuniOJQ/exec';
     var params = new URLSearchParams(location.search);
-    // The staff sign-in has its own app now (staff/, "Zel Salon Staff"): old ?page=staff links and emails go there.
+    // The staff sign-in has its own app at its own address (https://zel-salon-staff.web.app): old ?page=staff links and emails go there.
     var toStaff = params.get('page') === 'staff';
-    if (toStaff) { params.delete('page'); var rest = params.toString(); location.replace('staff/' + (rest ? '?' + rest : '')); }
+    if (toStaff) { params.delete('page'); var rest = params.toString(); location.replace('https://zel-salon-staff.web.app/' + (rest ? '?' + rest : '')); }
 
     // No "Install app" / "Add to Home screen" pop-up for clients (Chrome on Android shows one because this site is
     // installable). Installing still works from the browser menu, and the installed desktop app is unaffected.

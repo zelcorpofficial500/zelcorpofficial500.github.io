@@ -37,7 +37,9 @@
   <script>
     var APP = 'https://script.google.com/macros/s/AKfycbwweOuwLx1kf_GAjA0PmO52HwEMm1o3YnHBcGM-L2FwKyNyP3Etpp9FNa5Z_3oDuniOJQ/exec';
     var params = new URLSearchParams(location.search);
-    if (params.get('page') === 'staff') document.title = 'Zel Salon Staff';
+    // The staff sign-in has its own app now (staff/, "Zel Salon Staff"): old ?page=staff links and emails go there.
+    var toStaff = params.get('page') === 'staff';
+    if (toStaff) { params.delete('page'); var rest = params.toString(); location.replace('staff/' + (rest ? '?' + rest : '')); }
 
     // No "Install app" / "Add to Home screen" pop-up for clients (Chrome on Android shows one because this site is
     // installable). Installing still works from the browser menu, and the installed desktop app is unaffected.
@@ -54,7 +56,7 @@
     var overlay = navigator.windowControlsOverlay, frame = document.getElementById('app'), shownHeight = -1;
     function barHeight() { return overlay && overlay.visible ? Math.ceil(overlay.getTitlebarAreaRect().height) : 0; }
     function load() {
-      if (document.fullscreenElement) return;
+      if (toStaff || document.fullscreenElement) return;
       var h = barHeight(), p = new URLSearchParams(location.search);
       if (h === shownHeight) return;
       shownHeight = h;

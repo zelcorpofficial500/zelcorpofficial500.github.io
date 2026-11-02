@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Zel Salon Staff</title>
+  <meta name="description" content="Zel Salon staff sign-in.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#1f2328">
+  <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="apple-mobile-web-app-title" content="Zel Staff">
+  <style>
+    html, body { margin: 0; height: 100%; background: #1f2328; overflow: hidden; }
+    iframe { border: 0; width: 100%; height: 100%; display: block; }
+    noscript a { color: #fff; font: 16px Arial, sans-serif; display: block; padding: 24px; }
+  </style>
+</head>
+<body>
+  <!--
+    The staff app: its own installable app ("Zel Salon Staff", with the STAFF icon), separate from the clients' booking
+    app at the site's root. It frames the same Google Apps Script web app, always on its staff sign-in page.
+  -->
+  <iframe id="app" title="Zel Salon Staff" allow="clipboard-write; fullscreen" allowfullscreen></iframe>
+  <noscript><a href="https://script.google.com/macros/s/AKfycbwweOuwLx1kf_GAjA0PmO52HwEMm1o3YnHBcGM-L2FwKyNyP3Etpp9FNa5Z_3oDuniOJQ/exec?page=staff">Open the Zel Salon staff sign-in</a></noscript>
+  <script>
+    var APP = 'https://script.google.com/macros/s/AKfycbwweOuwLx1kf_GAjA0PmO52HwEMm1o3YnHBcGM-L2FwKyNyP3Etpp9FNa5Z_3oDuniOJQ/exec';
+    var p = new URLSearchParams(location.search);
+    p.set('page', 'staff');
+    document.getElementById('app').src = APP + '?' + p.toString();
+
+    // The dashboard sends its unseen notification count, shown as "(2) " in front of the title (and on the app's tab).
+    var baseTitle = document.title;
+    window.addEventListener('message', function (e) {
+      var host = ''; try { host = new URL(e.origin).hostname; } catch (err) { return; }
+      if (!/\.googleusercontent\.com$/.test(host) || !e.data || e.data.zelApp !== 'badge') return;
+      var n = parseInt(e.data.count, 10) || 0;
+      document.title = (n > 0 ? '(' + (n > 99 ? '99+' : n) + ') ' : '') + baseTitle;
+      // installed app on a phone or computer: the number on the app icon too, where the system supports it
+      try { if (navigator.setAppBadge) { if (n > 0) navigator.setAppBadge(n); else navigator.clearAppBadge(); } } catch (err) { /* not supported */ }
+    });
+  </script>
+</body>
+</html>

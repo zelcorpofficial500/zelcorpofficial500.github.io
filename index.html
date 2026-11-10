@@ -32,7 +32,23 @@
     #drag { display: none; position: fixed; z-index: 2; top: env(titlebar-area-y, 0); left: env(titlebar-area-x, 0);
       width: env(titlebar-area-width, 100%); height: env(titlebar-area-height, 0); -webkit-app-region: drag; app-region: drag; }
     body.wco #drag { display: block; }
+    /* Shown the moment the page opens, while Google loads the booking page behind it (about 3-6 seconds); it fades
+       away as soon as the booking page says it is ready (or after 20 seconds). Same photo, logo and words as the page. */
+    #splash { position: fixed; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; text-align: center;
+      background: linear-gradient(180deg, rgba(23,20,15,.72), rgba(23,20,15,.6) 45%, rgba(23,20,15,.66)), url('bg.jpg') center / cover no-repeat #17140f;
+      color: #fff; font-family: 'Fraunces', Georgia, serif; transition: opacity .35s ease; }
+    #splash.gone { opacity: 0; pointer-events: none; }
+    #splash img { height: 84px; margin: 0 0 28px; }
+    #splash .tag { font: italic 13.5px 'Work Sans', Arial, sans-serif; color: #e9e3d6; margin: 0 0 22px; }
+    #splash h1 { font-size: clamp(32px, 5vw, 48px); font-weight: 500; line-height: 1.15; margin: 0 0 20px; max-width: 640px; text-shadow: 0 2px 16px rgba(0,0,0,.25); }
+    #splash p { font: 17px/1.6 'Work Sans', Arial, sans-serif; color: #efe9dc; max-width: 480px; margin: 0 0 34px; }
+    #splash .btn { font: 600 16px 'Work Sans', Arial, sans-serif; background: #e21414; color: #fff; border-radius: 999px; padding: 16px 34px; position: relative; overflow: hidden; }
+    #splash .btn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent); animation: sweep 1.4s infinite; }
+    @keyframes sweep { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
   </style>
+  <link rel="preconnect" href="https://script.google.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
   <!--
@@ -42,6 +58,7 @@
     straight through to the app.
   -->
   <div id="drag"></div>
+  <div id="splash" aria-hidden="true"><img src="logo.jpg" alt=""><div class="tag">Where care meets comfort and confidence</div><h1>Great hair. Gorgeous nails. It all starts here.</h1><p>Treatments, straightening, color, and nail services, booked in a few taps. No account needed.</p><div class="btn">Book an Appointment</div></div>
   <iframe id="app" title="Zel Salon" allow="clipboard-write; geolocation; fullscreen; web-share; camera" allowfullscreen></iframe>
   <noscript><a href="https://script.google.com/macros/s/AKfycbwweOuwLx1kf_GAjA0PmO52HwEMm1o3YnHBcGM-L2FwKyNyP3Etpp9FNa5Z_3oDuniOJQ/exec">Open the Zel Salon booking page</a></noscript>
   <script>
@@ -78,6 +95,8 @@
       frame.src = APP + (q ? '?' + q : '');
     }
     load();
+    function hideSplash() { var sp = document.getElementById('splash'); if (sp && !sp.classList.contains('gone')) { sp.classList.add('gone'); setTimeout(function () { sp.remove(); }, 400); } }
+    setTimeout(hideSplash, 20000);
     // Installed app: the booking page asks for full screen when it's clicked (it's frames deep inside Google's wrapper, so
     // this page does it). Only messages from Google's app frames count, and only in the installed app.
     // The staff dashboard also sends its unseen notification count, shown as "(2) " in front of this tab's title.
@@ -107,6 +126,7 @@
       var host = ''; try { host = new URL(e.origin).hostname; } catch (err) { return; }
       if (!/\.googleusercontent\.com$/.test(host) || !e.data) return;
       if (e.data.zelApp === 'reload') { location.reload(); return; }   // a new version went live: load it
+      if (e.data.zelApp === 'ready') { hideSplash(); return; }   // the booking page is on screen: the welcome picture fades away
       if (e.data.zelApp === 'devicesGet') { var dl = []; try { dl = JSON.parse(localStorage.getItem('zelStaffDevices') || '[]'); } catch (err) { dl = []; } try { e.source.postMessage({ zelApp: 'devices', list: Array.isArray(dl) ? dl : [] }, e.origin); } catch (err) { /* frame gone */ } return; }
       if (e.data.zelApp === 'devicesSet') { var ds = Array.isArray(e.data.list) ? e.data.list.slice(0, 10) : []; try { var js = JSON.stringify(ds); if (js.length < 600000) { if (ds.length) localStorage.setItem('zelStaffDevices', js); else localStorage.removeItem('zelStaffDevices'); } } catch (err) { /* storage full or blocked */ } return; }   // saved accounts (see the dashboard)
       if (e.data.zelApp === 'dtrPhoto') { dtrPhoto(e); return; }   // DTR picture: share or save
